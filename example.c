@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "costreams.h"
-
+#include <omp.h>
 #define _(a,b) stream_add(a,b)
 
 int main(void){
@@ -21,16 +21,27 @@ int main(void){
 			123+321.5),
 			"\n")
 		);
-
-	cstream *building = NULL;
-	
+#define THREAD_COUNT 8
+	omp_set_num_threads(THREAD_COUNT);
+	cstream *building[THREAD_COUNT] = {NULL};
+#pragma omp parallel
+{
 	int i;
-	for(i=0;i<10;i++){
-		building = _(building,i);
-		building = _(building,": ");
-		building = _(building,1.0/i);
-		building = _(building,"\n");
+	int id = omp_get_thread_num();
+
+	building[id] = _(building[id],"This is thread ");
+	building[id] = _(building[id],id);
+	building[id] = _(building[id],"\n");
+	for(i=0;i<3;i++){
+		building[id] = _(building[id],i);
+		building[id] = _(building[id],": ");
+		building[id] = _(building[id],1.0/i);
+		building[id] = _(building[id],"\n");
 	}
-	ccout(building);
+}
+	int i;
+	for(i=0;i<THREAD_COUNT;i++){
+		ccout(building[i]);
+	}
 	return 0;
 }

@@ -1,2 +1,2 @@
 all:
-	gcc example.c -o streams -Wall -Wextra -g
+	gcc example.c -o streams -Wall -Wextra -g -fopenmp
